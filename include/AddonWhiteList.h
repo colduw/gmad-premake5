@@ -95,7 +95,7 @@ namespace Addon
 			"data_static/*.xml",
 			"data_static/*.csv",
 
-			"shaders/*.vcs",
+			"shaders/fxc/*.vcs",
 
 			NULL
 		};
