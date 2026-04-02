@@ -52,20 +52,50 @@ int ExtractAddonFile( BString strFile, BString strOutPath, bool pauseOnError )
 		File::CreateFolder( strOutPath + String::File::GetStripFilename( entry->strName ), true );
 		
 		// Load the file into the buffer
-		AutoBuffer filecontents;
-		if ( addon.ReadFile( entry->iFileNumber, filecontents ) )
+		AutoBuffer fileContents;
+		if ( addon.ReadFile( entry->iFileNumber, fileContents ) )
 		{
 			// Write the file to disk
-			if ( Bootil::String::Test::Contains( entry->strName, "./" ) || !File::Write( strOutPath + entry->strName, filecontents ) )
+			// TODO: Check if the file passes the whitelist before writing to disk?
+			bool fileWriteSuccess = false;
+			bool badSymbols = Bootil::String::Test::Contains( entry->strName, "./" ) || Bootil::String::Test::Contains( entry->strName, ".\\" );
+			if ( !badSymbols )
+			{
+				BString targetFullPath = strOutPath + entry->strName;
+				if ( !File::Exists( targetFullPath ) )
+				{
+					fileWriteSuccess = File::Write( targetFullPath, fileContents );
+				}
+				else
+				{
+					Output::Warning( "\t\tCouldn't write to '%s', file already exists?\n", targetFullPath.c_str() );
+				}
+			}
+
+			// We failed for whatever reason, try again to a different folder..
+			if ( !fileWriteSuccess )
 			{
 				BString genPath = "badnames/" + String::ToString( badFileCount ) + ".unk";
 				
-				if ( !quiet ) Output::Warning( "\t\tCouldn't write, trying to write as '%s'..\n", genPath.c_str() );
-				else Output::Warning( "\t\tCouldn't write to '%s', trying to write as '%s'..\n", entry->strName.c_str(), genPath.c_str() );
+				if ( quiet ) { Output::Warning( "\t\tCouldn't write, trying to write as '%s'..\n", genPath.c_str() ); }
+				else { Output::Warning( "\t\tCouldn't write to '%s', trying to write as '%s'..\n", entry->strName.c_str(), genPath.c_str() ); }
 
 				// Try to write the file but don't use any of its name, since we don't know which part of it may have caused the problem
 				File::CreateFolder( strOutPath + "badnames/", true );
-				File::Write( strOutPath + genPath, filecontents );
+
+				BString targetFullPath = strOutPath + genPath;
+				if ( !File::Exists( targetFullPath ) )
+				{
+					if ( !File::Write( targetFullPath, fileContents ) )
+					{
+						Output::Warning( "\t\tCouldn't write to '%s'..\n", targetFullPath.c_str() );
+					}
+				}
+				else
+				{
+					Output::Warning( "\t\tCouldn't write to '%s', file already exists?\n", targetFullPath.c_str() );
+				}
+
 				badFileCount++;
 			}
 		}
