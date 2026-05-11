@@ -1,3 +1,6 @@
 .vs/*
 _vpc_/*
 obj/*
+GMad.make
+Makefile
+bin

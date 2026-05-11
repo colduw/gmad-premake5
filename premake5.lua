@@ -19,17 +19,23 @@ solution "GMad"
 	}
 	
 	language "C++"
-	flags { "Symbols", "NoEditAndContinue", "NoPCH", "StaticRuntime", "EnableSSE" }
+
+	symbols "On"
+	editandcontinue "Off"
+	enablepch "Off"
+	staticruntime "On"
+	vectorextensions "SSE"
+
 	targetdir ( _OPTIONS.outdir )
 	includedirs { "include/", _OPTIONS.bootil_inc }
 	libdirs { _OPTIONS.bootil_lib }
 		
-	if os.is( "linux" ) or os.is( "macosx" ) then
+	if os.ishost( "linux" ) or os.ishost( "macosx" ) then
 		buildoptions { "-fPIC" }
 		linkoptions  { "-fPIC" }
 	end
 	
-	if os.is( "linux" ) then
+	if os.ishost( "linux" ) then
 		links { "pthread" }
 	end
 	
@@ -38,9 +44,10 @@ solution "GMad"
 		"Release"
 	}
 	
-	configuration "Release"
+	filter "configurations:Release"
 		defines { "NDEBUG" }
-		flags{ "OptimizeSpeed", "FloatFast" }
+		optimize "Speed"
+		floatingpoint "Fast"
 
 	project "GMad"
 		uuid ( "AB8E7B19-A70C-4737-88DE-F02160737C2E" )
@@ -48,11 +55,11 @@ solution "GMad"
 		kind "ConsoleApp"
 		targetname( "gmad" )
 		
-		if os.is( "linux" ) then
+		if os.ishost( "linux" ) then
 			targetname( "gmad_linux" )
 		end
 		
-		if os.is( "macosx" ) then
+		if os.ishost( "macosx" ) then
 			targetname( "gmad_osx" )
 		end
 		
